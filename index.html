@@ -762,6 +762,78 @@
   <div class="timer-next-info" id="timer-next-info">Siguiente: DM #2</div>
 </div>
 
+<!-- ══ SCREEN 4: FOLLOW-UPS ══ -->
+<div id="screen-followups" class="screen">
+  <div class="setup-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div class="setup-title-wrap">
+      <div class="setup-account-label">Panel Global</div>
+      <div class="setup-account-name">📋 Seguimientos HOY</div>
+    </div>
+    <div class="url-counter"><span id="followups-total-count">0</span> leads</div>
+  </div>
+
+  <div class="followups-container" style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+    
+    <!-- SECTION 4 HOURS -->
+    <div class="followup-section">
+      <div class="followup-section-title" style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--accent); letter-spacing: 2px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span>⏰ EN 4 HORAS (MSG 1)</span>
+        <span class="followup-section-badge" id="badge-4h" style="font-family: 'Space Mono', monospace; font-size: 11px; background: rgba(255, 59, 59, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 1px 6px; border-radius: 4px;">0</span>
+      </div>
+      <div class="followup-list" id="list-4h" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Card items -->
+      </div>
+    </div>
+
+    <!-- SECTION DAY 2 -->
+    <div class="followup-section">
+      <div class="followup-section-title" style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--accent2); letter-spacing: 2px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span>📅 HOY DÍA 2 (MSG 1)</span>
+        <span class="followup-section-badge" id="badge-d2" style="font-family: 'Space Mono', monospace; font-size: 11px; background: rgba(255, 124, 59, 0.1); border: 1px solid var(--accent2); color: var(--accent2); padding: 1px 6px; border-radius: 4px;">0</span>
+      </div>
+      <div class="followup-list" id="list-d2" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Card items -->
+      </div>
+    </div>
+
+    <!-- SECTION DAY 4 -->
+    <div class="followup-section">
+      <div class="followup-section-title" style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--yellow); letter-spacing: 2px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span>📅 HOY DÍA 4 (MSG 2)</span>
+        <span class="followup-section-badge" id="badge-d4" style="font-family: 'Space Mono', monospace; font-size: 11px; background: rgba(255, 204, 0, 0.1); border: 1px solid var(--yellow); color: var(--yellow); padding: 1px 6px; border-radius: 4px;">0</span>
+      </div>
+      <div class="followup-list" id="list-d4" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Card items -->
+      </div>
+    </div>
+
+    <!-- SECTION DAY 7 -->
+    <div class="followup-section">
+      <div class="followup-section-title" style="font-size: 13px; font-weight: 700; text-transform: uppercase; color: var(--green); letter-spacing: 2px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span>📅 HOY DÍA 7 (MSG 3)</span>
+        <span class="followup-section-badge" id="badge-d7" style="font-family: 'Space Mono', monospace; font-size: 11px; background: rgba(0, 255, 136, 0.1); border: 1px solid var(--green); color: var(--green); padding: 1px 6px; border-radius: 4px;">0</span>
+      </div>
+      <div class="followup-list" id="list-d7" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Card items -->
+      </div>
+    </div>
+
+    <!-- SIMULATOR PANEL -->
+    <div class="simulator-panel" style="margin-top: 16px; padding: 16px; background: var(--surface); border: 1px dashed var(--border); border-radius: 12px;">
+      <div class="sim-title" style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; font-weight: 700;">🛠 Herramientas de Simulación para Pruebas</div>
+      <div class="sim-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <button class="btn-sim" onclick="simulateLog(1, 4.5)" style="background: rgba(255,59,59,0.1); border: 1px solid rgba(255,59,59,0.3); color: var(--accent); padding: 8px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;">+ MSG 1 hace 4h</button>
+        <button class="btn-sim" onclick="simulateLog(1, 50)" style="background: rgba(255,124,59,0.1); border: 1px solid rgba(255,124,59,0.3); color: var(--accent2); padding: 8px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;">+ MSG 1 hace 2d (50h)</button>
+        <button class="btn-sim" onclick="simulateLog(2, 98)" style="background: rgba(255,204,0,0.1); border: 1px solid rgba(255,204,0,0.3); color: var(--yellow); padding: 8px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;">+ MSG 2 hace 4d (98h)</button>
+        <button class="btn-sim" onclick="simulateLog(3, 170)" style="background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); padding: 8px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;">+ MSG 3 hace 7d (170h)</button>
+      </div>
+      <button onclick="clearLogsAndReset()" style="width: 100%; margin-top: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #888; padding: 8px; font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; border-radius: 6px; cursor: pointer; transition: all 0.2s;">Limpiar Historial y Estado de Pruebas</button>
+    </div>
+
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -772,6 +844,8 @@ const TOTAL_URLS = 15;
 const TIMER_SECONDS = 60;
 
 let accounts = {};
+let logs = [];
+let followUpsCompleted = {};
 let currentAccount = null;
 let currentIndex = 0;
 let timerInterval = null;
@@ -782,12 +856,56 @@ let seqStartTime = null;
 function loadData() {
   try {
     const saved = localStorage.getItem('dm_sequencer_v2');
-    if (saved) accounts = JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.accounts && (parsed.logs || parsed.followUpsCompleted)) {
+          accounts = parsed.accounts || {};
+          logs = parsed.logs || [];
+          followUpsCompleted = parsed.followUpsCompleted || {};
+        } else {
+          accounts = parsed || {};
+          logs = [];
+          followUpsCompleted = {};
+        }
+      }
+    }
   } catch(e) {}
 }
 
 function saveData() {
-  localStorage.setItem('dm_sequencer_v2', JSON.stringify(accounts));
+  localStorage.setItem('dm_sequencer_v2', JSON.stringify({
+    accounts,
+    logs,
+    followUpsCompleted
+  }));
+}
+
+function getPendingFollowupsCount() {
+  let count = 0;
+  const now = Date.now();
+  logs.forEach(log => {
+    const elapsedMs = now - log.timestamp;
+    const elapsedHours = elapsedMs / (1000 * 60 * 60);
+
+    if (log.dmNum === 1) {
+      if (elapsedHours >= 4 && elapsedHours < 48 && !followUpsCompleted[log.id + '_4h']) {
+        count++;
+      }
+      if (elapsedHours >= 48 && !followUpsCompleted[log.id + '_d2']) {
+        count++;
+      }
+    } else if (log.dmNum === 2) {
+      if (elapsedHours >= 96 && !followUpsCompleted[log.id + '_d4']) {
+        count++;
+      }
+    } else if (log.dmNum === 3) {
+      if (elapsedHours >= 168 && !followUpsCompleted[log.id + '_d7']) {
+        count++;
+      }
+    }
+  });
+  return count;
 }
 
 // ── HOME ──
@@ -812,6 +930,27 @@ function renderHome() {
     btn.onclick = () => openAccount(i);
     grid.appendChild(btn);
   }
+
+  // 11th Button: Seguimientos
+  const followUpBtn = document.createElement('div');
+  followUpBtn.className = 'account-btn';
+  followUpBtn.style.gridColumn = 'span 2';
+  followUpBtn.style.borderColor = 'var(--accent)';
+  followUpBtn.style.background = 'linear-gradient(135deg, rgba(255, 59, 59, 0.05) 0%, var(--surface) 100%)';
+  
+  const totalPending = getPendingFollowupsCount();
+  const badgeHtml = totalPending > 0 ? `<span id="followup-badge-total" style="font-family: 'Space Mono', monospace; font-size: 11px; background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 999px; margin-left: auto;">${totalPending}</span>` : `<span id="followup-badge-total" style="font-family: 'Space Mono', monospace; font-size: 11px; background: var(--accent); color: #fff; padding: 2px 8px; border-radius: 999px; margin-left: auto; display: none;">0</span>`;
+
+  followUpBtn.innerHTML = `
+    <div class="acc-num" style="color: var(--accent); font-weight: 700;">📋 SEGUIMIENTO DIARIO</div>
+    <div class="acc-name" style="font-size: 16px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+      <span>📋 Seguimientos</span>
+      ${badgeHtml}
+    </div>
+    <div class="acc-status" style="color: #888;">Leads que necesitan seguimiento hoy</div>
+  `;
+  followUpBtn.onclick = () => openFollowUpsScreen();
+  grid.appendChild(followUpBtn);
 }
 
 function openAccount(num) {
@@ -943,6 +1082,17 @@ function openCurrentDM() {
 }
 
 function markDone() {
+  const url = accounts[currentAccount].urls[currentIndex];
+  // Registrar hora de envío - Log message sending time
+  const logId = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  logs.push({
+    id: logId,
+    accountNum: currentAccount,
+    dmNum: currentIndex + 1, // 1 to 15
+    url: url,
+    timestamp: Date.now()
+  });
+
   currentIndex++;
   accounts[currentAccount].sent = currentIndex;
   saveData();
@@ -962,6 +1112,144 @@ function markDone() {
   startTimer(() => {
     loadDM(currentIndex);
   });
+}
+
+// ── FOLLOW-UPS PANELS ──
+function openFollowUpsScreen() {
+  renderFollowUps();
+  showScreen('screen-followups');
+}
+
+function createFollowupCard(log, typeKey) {
+  const item = document.createElement('div');
+  item.className = 'followups-item';
+  item.style.background = 'var(--surface)';
+  item.style.border = '1px solid var(--border)';
+  item.style.borderRadius = '10px';
+  item.style.padding = '14px';
+  item.style.display = 'flex';
+  item.style.flexDirection = 'column';
+  item.style.gap = '10px';
+
+  const d = new Date(log.timestamp);
+  const dateFormatted = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+  item.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div>
+        <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); text-transform: uppercase;">CUENTA ${String(log.accountNum).padStart(2,'0')} · DM #${log.dmNum}</div>
+        <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Primer contacto: ${dateFormatted}</div>
+      </div>
+    </div>
+    <div class="dm-url-display" style="margin: 0; padding: 10px 12px; font-size: 11px;" onclick="window.open('${log.url}', '_blank')">
+      ${log.url}
+    </div>
+    <button class="btn-listo" onclick="markFollowupDone('${log.id}', '${typeKey}')" style="padding: 10px 16px; font-size: 12px; letter-spacing: 1px; border-radius: 6px; margin-top: 2px; width: auto; font-weight: 700;">
+      ✓ Seguimiento enviado
+    </button>
+  `;
+  return item;
+}
+
+function renderFollowUps() {
+  const list4h = document.getElementById('list-4h');
+  const listD2 = document.getElementById('list-d2');
+  const listD4 = document.getElementById('list-d4');
+  const listD7 = document.getElementById('list-d7');
+
+  list4h.innerHTML = '';
+  listD2.innerHTML = '';
+  listD4.innerHTML = '';
+  listD7.innerHTML = '';
+
+  const now = Date.now();
+  let count4h = 0;
+  let countD2 = 0;
+  let countD4 = 0;
+  let countD7 = 0;
+
+  logs.forEach(log => {
+    const elapsedMs = now - log.timestamp;
+    const elapsedHours = elapsedMs / (1000 * 60 * 60);
+
+    if (log.dmNum === 1) {
+      // 4 hours (MSG 1)
+      if (elapsedHours >= 4 && elapsedHours < 48 && !followUpsCompleted[log.id + '_4h']) {
+        list4h.appendChild(createFollowupCard(log, '4h'));
+        count4h++;
+      }
+      // Day 2 (MSG 1)
+      if (elapsedHours >= 48 && !followUpsCompleted[log.id + '_d2']) {
+        listD2.appendChild(createFollowupCard(log, 'd2'));
+        countD2++;
+      }
+    } else if (log.dmNum === 2) {
+      // Day 4 (MSG 2)
+      if (elapsedHours >= 96 && !followUpsCompleted[log.id + '_d4']) {
+        listD4.appendChild(createFollowupCard(log, 'd4'));
+        countD4++;
+      }
+    } else if (log.dmNum === 3) {
+      // Day 7 (MSG 3)
+      if (elapsedHours >= 168 && !followUpsCompleted[log.id + '_d7']) {
+        listD7.appendChild(createFollowupCard(log, 'd7'));
+        countD7++;
+      }
+    }
+  });
+
+  // Update badges
+  document.getElementById('badge-4h').textContent = count4h;
+  document.getElementById('badge-d2').textContent = countD2;
+  document.getElementById('badge-d4').textContent = countD4;
+  document.getElementById('badge-d7').textContent = countD7;
+
+  // Placeholder
+  const placeholderHtml = `<div style="text-align: center; padding: 18px; font-size: 12px; color: var(--muted); border: 1px dashed var(--border); border-radius: 8px; font-family: 'Space Mono', monospace;">Sin seguimientos pendientes</div>`;
+  
+  if (count4h === 0) list4h.innerHTML = placeholderHtml;
+  if (countD2 === 0) listD2.innerHTML = placeholderHtml;
+  if (countD4 === 0) listD4.innerHTML = placeholderHtml;
+  if (countD7 === 0) listD7.innerHTML = placeholderHtml;
+
+  const total = count4h + countD2 + countD4 + countD7;
+  document.getElementById('followups-total-count').textContent = total;
+}
+
+function markFollowupDone(logId, typeKey) {
+  followUpsCompleted[logId + '_' + typeKey] = true;
+  saveData();
+  showToast('✓ Seguimiento marcado como completado', 'success');
+  renderFollowUps();
+}
+
+function simulateLog(dmNum, offsetHours) {
+  const accountNum = Math.floor(Math.random() * 10) + 1;
+  const username = `lead_cuenta${accountNum}_dm${dmNum}`;
+  const mockUrl = `https://ig.me/m/${username}`;
+  
+  const logId = 'mock_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  const simulatedTime = Date.now() - (offsetHours * 60 * 60 * 1000);
+
+  logs.push({
+    id: logId,
+    accountNum: accountNum,
+    dmNum: dmNum,
+    url: mockUrl,
+    timestamp: simulatedTime
+  });
+
+  saveData();
+  showToast('✓ Log simulado inyectado correctamente', 'success');
+  renderFollowUps();
+}
+
+function clearLogsAndReset() {
+  logs = [];
+  followUpsCompleted = {};
+  saveData();
+  showToast('📋 Historial y estado de seguimientos limpiados', 'success');
+  renderFollowUps();
 }
 
 // ── TIMER ──
