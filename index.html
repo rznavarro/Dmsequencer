@@ -683,6 +683,9 @@
     <div class="url-counter"><span id="url-count">0</span>/15</div>
   </div>
   <div class="url-list" id="url-list"></div>
+  <div id="duplicate-warning-banner" style="display: none; background: rgba(255, 59, 59, 0.12); border-top: 1px solid var(--accent); border-bottom: 1px solid var(--accent); padding: 12px 24px; font-size: 11px; color: var(--accent); font-family: 'Space Mono', monospace; line-height: 1.5; text-align: center;">
+    ⚠️ <strong>¡ALERTA DE DUPLICADOS DETECTADA!</strong> Una o más URLs ya existen en el sistema. Revísalas para evitar duplicados.
+  </div>
   <div class="setup-footer">
     <button class="btn-save" id="btn-save" onclick="saveAccount()" disabled>Guardar</button>
   </div>
@@ -843,6 +846,19 @@ const TOTAL_ACCOUNTS = 10;
 const TOTAL_URLS = 15;
 const TIMER_SECONDS = 60;
 
+const ACCOUNT_PROFILES = {
+  1: { username: 'vortexia.data', url: 'https://www.instagram.com/vortexia.data/' },
+  2: { username: 'vortexia.navarro', url: 'https://www.instagram.com/vortexia.navarro/' },
+  3: { username: 'vortexia.build', url: 'https://www.instagram.com/vortexia.build/' },
+  4: { username: 'vortexia.energy', url: 'https://www.instagram.com/vortexia.energy/' },
+  5: { username: 'vortexia.labs', url: 'https://www.instagram.com/vortexia.labs/' },
+  6: { username: 'vortexia.re', url: 'https://www.instagram.com/vortexia.re/' },
+  7: { username: 'vortexia.io', url: 'https://www.instagram.com/vortexia.io/' },
+  8: { username: 'vortexia.bi', url: 'https://www.instagram.com/vortexia.bi/' },
+  9: { username: 'vortexia.supreme', url: 'https://www.instagram.com/vortexia.supreme/' },
+  10: { username: 'vortexia.automate', url: 'https://www.instagram.com/vortexia.automate/' }
+};
+
 let accounts = {};
 let logs = [];
 let followUpsCompleted = {};
@@ -915,6 +931,7 @@ function renderHome() {
 
   for (let i = 1; i <= TOTAL_ACCOUNTS; i++) {
     const acc = accounts[i];
+    const profile = ACCOUNT_PROFILES[i];
     const configured = acc && acc.urls && acc.urls.filter(u => u.trim()).length === TOTAL_URLS;
     const sent = acc ? (acc.sent || 0) : 0;
     const progress = configured ? Math.round((sent / TOTAL_URLS) * 100) : 0;
@@ -922,7 +939,10 @@ function renderHome() {
     const btn = document.createElement('div');
     btn.className = 'account-btn' + (configured ? ' configured' : '');
     btn.innerHTML = `
-      <div class="acc-num">CUENTA ${String(i).padStart(2,'0')}</div>
+      <div class="acc-num" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <span>CUENTA ${String(i).padStart(2,'0')}</span>
+        <span style="color: var(--accent); font-size: 10px; font-weight: bold; font-family: 'Space Mono', monospace; text-decoration: underline; cursor: pointer;" onclick="event.stopPropagation(); window.open('${profile.url}', '_blank')">@${profile.username}</span>
+      </div>
       <div class="acc-name">Cuenta ${i}</div>
       <div class="acc-status">${configured ? `✓ ${sent}/${TOTAL_URLS} enviados` : '— Sin configurar'}</div>
       ${configured ? `<div class="acc-progress" style="width:${progress}%"></div>` : ''}
@@ -968,7 +988,8 @@ function openAccount(num) {
 
 // ── SETUP ──
 function openSetupScreen(num) {
-  document.getElementById('setup-account-name').textContent = `Cuenta ${num}`;
+  const profile = ACCOUNT_PROFILES[num];
+  document.getElementById('setup-account-name').innerHTML = `Cuenta ${num} <span style="color: var(--accent); font-size: 14px; font-family: 'Space Mono', monospace; font-weight: normal; margin-left:8px; cursor: pointer; text-decoration: underline;" onclick="window.open('${profile.url}', '_blank')">(@${profile.username})</span>`;
   renderUrlList(num);
   showScreen('screen-setup');
 }
@@ -997,13 +1018,71 @@ function renderUrlList(num) {
   }
 
   updateUrlCounter(num);
+  scanCurrentInputsForDuplicates(num);
+}
+
+function findDuplicate(val, currentAccNum, currentIdx) {
+  if (!val || !val.trim()) return null;
+  const cleanVal = val.trim().toLowerCase();
+  for (let accKey in accounts) {
+    const accNum = parseInt(accKey);
+    const uArr = accounts[accNum].urls || [];
+    for (let uIdx = 0; uIdx < uArr.length; uIdx++) {
+      if (accNum === currentAccNum && uIdx === currentIdx) {
+        continue;
+      }
+      if (uArr[uIdx] && uArr[uIdx].trim().toLowerCase() === cleanVal) {
+        return { accountNum: accNum, index: uIdx + 1 };
+      }
+    }
+  }
+  return null;
+}
+
+function scanCurrentInputsForDuplicates(num) {
+  const inputs = document.querySelectorAll('#url-list .url-input');
+  inputs.forEach(input => {
+    const idx = parseInt(input.dataset.index);
+    const val = input.value.trim();
+    if (val) {
+      const duplicateInfo = findDuplicate(val, num, idx);
+      if (duplicateInfo) {
+        input.style.borderColor = 'var(--accent)';
+        input.style.boxShadow = '0 0 8px rgba(255, 59, 59, 0.4)';
+        const profile = ACCOUNT_PROFILES[duplicateInfo.accountNum];
+        const profileName = profile ? `@${profile.username}` : `Cuenta ${duplicateInfo.accountNum}`;
+        input.title = `Duplicado en ${profileName} (DM #${duplicateInfo.index})`;
+      } else {
+        input.style.borderColor = '';
+        input.style.boxShadow = '';
+        input.title = '';
+      }
+    } else {
+      input.style.borderColor = '';
+      input.style.boxShadow = '';
+      input.title = '';
+    }
+  });
 }
 
 function onUrlChange(input, num) {
   const idx = parseInt(input.dataset.index);
+  const val = input.value.trim();
+  
   if (!accounts[num]) accounts[num] = { urls: Array(TOTAL_URLS).fill(''), sent: 0 };
-  accounts[num].urls[idx] = input.value.trim();
-  input.classList.toggle('filled', !!input.value.trim());
+  accounts[num].urls[idx] = val;
+  input.classList.toggle('filled', !!val);
+  
+  if (val) {
+    const duplicateInfo = findDuplicate(val, num, idx);
+    if (duplicateInfo) {
+      const profile = ACCOUNT_PROFILES[duplicateInfo.accountNum];
+      const profileName = profile ? `@${profile.username}` : `Cuenta ${duplicateInfo.accountNum}`;
+      showToast(`⚠️ URL ya registrada en el sistema: ${profileName} (DM #${duplicateInfo.index})`, 'error');
+    }
+  }
+  
+  scanCurrentInputsForDuplicates(num);
   updateUrlCounter(num);
 }
 
@@ -1012,6 +1091,22 @@ function updateUrlCounter(num) {
   const filled = acc.urls ? acc.urls.filter(u => u && u.trim()).length : 0;
   document.getElementById('url-count').textContent = filled;
   document.getElementById('btn-save').disabled = filled !== TOTAL_URLS;
+
+  // Real-time banner visibility based on duplicate presence
+  let hasAnyDuplicate = false;
+  if (acc.urls) {
+    for (let i = 0; i < acc.urls.length; i++) {
+      if (acc.urls[i] && findDuplicate(acc.urls[i], num, i)) {
+        hasAnyDuplicate = true;
+        break;
+      }
+    }
+  }
+
+  const warningBanner = document.getElementById('duplicate-warning-banner');
+  if (warningBanner) {
+    warningBanner.style.display = hasAnyDuplicate ? 'block' : 'none';
+  }
 }
 
 function saveAccount() {
@@ -1022,6 +1117,26 @@ function saveAccount() {
   if (filled !== TOTAL_URLS) {
     showToast(`Faltan ${TOTAL_URLS - filled} URLs`, 'error');
     return;
+  }
+
+  // Double check duplicates to show explicit list to the user
+  let duplicates = [];
+  accounts[num].urls.forEach((url, idx) => {
+    if (url) {
+      const dup = findDuplicate(url, num, idx);
+      if (dup) {
+        const profile = ACCOUNT_PROFILES[dup.accountNum];
+        const profileName = profile ? `@${profile.username}` : `Cuenta ${dup.accountNum}`;
+        duplicates.push(`· Fila ${idx+1}: Duplicado ya presente en ${profileName} (DM #${dup.index})`);
+      }
+    }
+  });
+
+  if (duplicates.length > 0) {
+    const message = `Se encontraron duplicados:\n${duplicates.slice(0, 3).join('\n')}${duplicates.length > 3 ? `\n... y ${duplicates.length - 3} más` : ''}\n\n¿Deseas guardar de todas formas?`;
+    if (!confirm(message)) {
+      return;
+    }
   }
 
   accounts[num].sent = 0;
@@ -1036,10 +1151,11 @@ function saveAccount() {
 // ── SEQUENCE ──
 function openSequenceScreen(num) {
   const acc = accounts[num];
+  const profile = ACCOUNT_PROFILES[num];
   currentAccount = num;
   currentIndex = acc.sent || 0;
 
-  document.getElementById('seq-account-name').textContent = `Cuenta ${num}`;
+  document.getElementById('seq-account-name').innerHTML = `Cuenta ${num} <span style="color: var(--accent); font-size: 14px; font-family: 'Space Mono', monospace; font-weight: normal; margin-left:8px; cursor: pointer; text-decoration: underline;" onclick="window.open('${profile.url}', '_blank')">(@${profile.username})</span>`;
   document.getElementById('seq-badge-num').textContent = currentIndex;
   document.getElementById('seq-start-sub').textContent = `${TOTAL_URLS - currentIndex} DMs pendientes de enviar.`;
 
@@ -1126,27 +1242,47 @@ function createFollowupCard(log, typeKey) {
   item.style.background = 'var(--surface)';
   item.style.border = '1px solid var(--border)';
   item.style.borderRadius = '10px';
-  item.style.padding = '14px';
+  item.style.padding = '16px';
   item.style.display = 'flex';
   item.style.flexDirection = 'column';
-  item.style.gap = '10px';
+  item.style.gap = '12px';
 
   const d = new Date(log.timestamp);
   const dateFormatted = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
+  const profile = ACCOUNT_PROFILES[log.accountNum] || { username: `cuenta${log.accountNum}`, url: '#' };
+
   item.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <div>
-        <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); text-transform: uppercase;">CUENTA ${String(log.accountNum).padStart(2,'0')} · DM #${log.dmNum}</div>
-        <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Primer contacto: ${dateFormatted}</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="background: rgba(255, 59, 59, 0.2); border: 1px solid var(--accent); color: #fff; padding: 4px 10px; border-radius: 6px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; letter-spacing: 1px; cursor: pointer;" onclick="window.open('${profile.url}', '_blank')">
+          🔴 CUENTA ${log.accountNum}
+        </span>
+        <a href="${profile.url}" target="_blank" style="color: var(--accent); text-decoration: underline; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: bold; cursor: pointer;">
+          @${profile.username}
+        </a>
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);">
+          DM #${log.dmNum}
+        </span>
+      </div>
+      <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted);">
+        Enviado: ${dateFormatted}
       </div>
     </div>
-    <div class="dm-url-display" style="margin: 0; padding: 10px 12px; font-size: 11px;" onclick="window.open('${log.url}', '_blank')">
-      ${log.url}
+    <div>
+      <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px;">URL de contacto originaria:</div>
+      <div class="dm-url-display" style="margin: 0; padding: 10px 12px; font-size: 11px; background: rgba(0,0,0,0.3);" onclick="window.open('${log.url}', '_blank')">
+        🔗 ${log.url}
+      </div>
     </div>
-    <button class="btn-listo" onclick="markFollowupDone('${log.id}', '${typeKey}')" style="padding: 10px 16px; font-size: 12px; letter-spacing: 1px; border-radius: 6px; margin-top: 2px; width: auto; font-weight: 700;">
-      ✓ Seguimiento enviado
-    </button>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <span style="font-size: 11px; color: var(--muted);">
+        Usa la cuenta: <a href="${profile.url}" target="_blank" style="color: #4040ff; text-decoration: underline; font-weight: bold;">@${profile.username} ↗</a> para responder
+      </span>
+      <button class="btn-listo" onclick="markFollowupDone('${log.id}', '${typeKey}')" style="padding: 10px 16px; font-size: 12px; letter-spacing: 1px; border-radius: 6px; width: auto; font-weight: 700;">
+        ✓ Seguimiento enviado
+      </button>
+    </div>
   `;
   return item;
 }
@@ -1310,6 +1446,59 @@ function goHome() {
   renderHome();
   showScreen('screen-home');
 }
+
+// ── KEYBOARD SHORTCUTS ──
+window.addEventListener('keydown', (e) => {
+  // Ignorar si el usuario está escribiendo en campos de entrada (como las URLs)
+  if (
+    document.activeElement && 
+    (document.activeElement.tagName === 'INPUT' || 
+     document.activeElement.tagName === 'TEXTAREA' || 
+     document.activeElement.isContentEditable)
+  ) {
+    return;
+  }
+
+  const key = e.key;
+
+  // Atajo para pantalla completa (tecla 'q' o 'Q')
+  if (key.toLowerCase() === 'q') {
+    e.preventDefault();
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+        .then(() => {
+          showToast('⌨️ Atajo: Pantalla Completa Activada', 'success');
+        })
+        .catch(() => {
+          showToast('⚠️ No se pudo activar pantalla completa', 'error');
+        });
+    } else {
+      document.exitFullscreen();
+      showToast('⌨️ Atajo: Pantalla Completa Desactivada', 'success');
+    }
+    return;
+  }
+
+  // Atajo para Seguimientos (tecla 'r' o 'R')
+  if (key.toLowerCase() === 'r') {
+    e.preventDefault();
+    openFollowUpsScreen();
+    showToast('⌨️ Atajo: Panel de Seguimientos', 'success');
+    return;
+  }
+
+  // Atajos del 1 al 9 y 0 para las cuentas
+  if (key >= '1' && key <= '9') {
+    const accNum = parseInt(key);
+    e.preventDefault();
+    openAccount(accNum);
+    showToast(`⌨️ Atajo: Cuenta ${accNum}`, 'success');
+  } else if (key === '0') {
+    e.preventDefault();
+    openAccount(10);
+    showToast('⌨️ Atajo: Cuenta 10', 'success');
+  }
+});
 
 // ── TOAST ──
 function showToast(msg, type = '') {
