@@ -1,0 +1,6 @@
+{
+  "name": "DM Sequencer",
+  "description": "Sequence and send Instagram DMs across multiple accounts with a built-in safety delay timer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
