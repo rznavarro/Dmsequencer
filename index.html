@@ -879,6 +879,20 @@ function loadData() {
           accounts = parsed.accounts || {};
           logs = parsed.logs || [];
           followUpsCompleted = parsed.followUpsCompleted || {};
+          
+          // Migración de datos históricos:
+          // Las URLs enviadas desde la interfaz de secuencia siempre son MSG 1 (dmNum = 1).
+          // Anteriormente se guardaba como dmNum = currentIndex + 1 (de 1 a 15) por confusión,
+          // lo que causaba que casi ninguna URL apareciera como follow-up elegible.
+          logs.forEach(log => {
+            if (log.id && log.id.startsWith('log_')) {
+              // Cualquier log original de secuencia real lo ponemos como dmNum = 1 (MSG 1)
+              // para que reciba sus seguimientos correctos.
+              if (log.dmNum > 1 && !log.id.includes('followup_')) {
+                log.dmNum = 1;
+              }
+            }
+          });
         } else {
           accounts = parsed || {};
           logs = [];
@@ -1200,11 +1214,13 @@ function openCurrentDM() {
 function markDone() {
   const url = accounts[currentAccount].urls[currentIndex];
   // Registrar hora de envío - Log message sending time
+  // Cada contacto iniciado en el secuenciador es siempre el MSG 1 (Primer Contacto)
   const logId = 'log_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   logs.push({
     id: logId,
     accountNum: currentAccount,
-    dmNum: currentIndex + 1, // 1 to 15
+    dmNum: 1, // Siempre 1 para MSG 1
+    urlIndex: currentIndex + 1, // Posición individual de la URL (1 a 15) como referencia
     url: url,
     timestamp: Date.now()
   });
@@ -1250,7 +1266,16 @@ function createFollowupCard(log, typeKey) {
   const d = new Date(log.timestamp);
   const dateFormatted = d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
+  // Calcular tiempo transcurrido exacto para mostrarlo en tarjeta
+  const elapsedMs = Date.now() - log.timestamp;
+  const elapsedHours = Math.floor(elapsedMs / (1000 * 60 * 60));
+  const elapsedMinutes = Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60));
+  const elapsedText = elapsedHours > 0 ? `Hace ${elapsedHours}h ${elapsedMinutes}m` : `Hace ${elapsedMinutes}m`;
+
   const profile = ACCOUNT_PROFILES[log.accountNum] || { username: `cuenta${log.accountNum}`, url: '#' };
+
+  // Intentar mostrar qué número de URL original era si está guardada, o si no, omitir
+  const urlRefText = log.urlIndex ? ` (Fila #${log.urlIndex})` : '';
 
   item.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
@@ -1262,11 +1287,12 @@ function createFollowupCard(log, typeKey) {
           @${profile.username}
         </a>
         <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted);">
-          DM #${log.dmNum}
+          DM #${log.dmNum}${urlRefText}
         </span>
       </div>
-      <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted);">
-        Enviado: ${dateFormatted}
+      <div style="font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+        <span>Enviado: ${dateFormatted}</span>
+        <span style="color: var(--accent); font-weight: bold;">(${elapsedText})</span>
       </div>
     </div>
     <div>
@@ -1353,7 +1379,43 @@ function renderFollowUps() {
 }
 
 function markFollowupDone(logId, typeKey) {
+  // Marcar como completado el seguimiento para impedir que vuelva a salir en el mismo tipo
   followUpsCompleted[logId + '_' + typeKey] = true;
+
+  // Buscar el log original
+  const originalLog = logs.find(l => l.id === logId);
+  if (originalLog) {
+    if (typeKey === '4h' || typeKey === 'd2') {
+      // Si completamos Seguimiento de MSG 1 (4h o d2), significa que mandamos MSG 2 (dmNum = 2) a esta url.
+      // Registramos un nuevo log de enviado de tipo MSG 2 con hora actual para que gatille el seguimiento d4 dentro de 4 días.
+      const alreadyHasMsg2 = logs.some(l => l.url === originalLog.url && l.dmNum === 2);
+      if (!alreadyHasMsg2) {
+        const nextId = 'followup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        logs.push({
+          id: nextId,
+          accountNum: originalLog.accountNum,
+          dmNum: 2, // MSG 2
+          url: originalLog.url,
+          timestamp: Date.now()
+        });
+      }
+    } else if (typeKey === 'd4') {
+      // Si completamos Seguimiento de MSG 2 (d4), significa que mandamos MSG 3 (dmNum = 3) a esta url.
+      // Registramos un nuevo log para el seguimiento de d7 dentro de 7 días.
+      const alreadyHasMsg3 = logs.some(l => l.url === originalLog.url && l.dmNum === 3);
+      if (!alreadyHasMsg3) {
+        const nextId = 'followup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        logs.push({
+          id: nextId,
+          accountNum: originalLog.accountNum,
+          dmNum: 3, // MSG 3
+          url: originalLog.url,
+          timestamp: Date.now()
+        });
+      }
+    }
+  }
+
   saveData();
   showToast('✓ Seguimiento marcado como completado', 'success');
   renderFollowUps();
